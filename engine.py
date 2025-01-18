@@ -27,6 +27,15 @@ class Value:
             n._backward()
 
     # activation functions
+    def linear(self):
+        out = Value(self.data, _children=(self,), _operation='linear')
+
+        def _backward():
+            self.grad += out.grad * 1.0
+
+        out._backward = _backward
+        return out
+
     def tanh(self):
         data = math.tanh(self.data)
         out = Value(data, _children=(self,), _operation='tanh')
@@ -129,8 +138,10 @@ class Value:
         other = Value(other) if isinstance(other, (int, float)) else other
         return self.__add__(-other)
 
+    def __rsub__(self, other):
+        return self.__sub__(other)
+
     def __truediv__(self, other):
-        assert other.data != 0, f"division by zero"
         assert isinstance(other, (int, float, Value)), f"unsupported type '{type(other)}'"
         other = Value(other) if isinstance(other, (int, float)) else other
         return self.__mul__(other.__pow__(-1))
